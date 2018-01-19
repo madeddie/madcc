@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='madcc',
-    version='0.0.2.dev2',
+    version='0.0.2.dev8',
     description='madtech cryptocurrency functions',
     long_description=long_description,
     url='https://github.com/madeddie/madcc',
@@ -33,14 +33,17 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
     install_requires=[
+        'coinmarketcap',
         'krakenex',
-        'requests'
+        'requests',
+        'tabulate',
     ],
     python_requires='~=3.3',
 
     entry_points={
         'console_scripts': [
             'kraken_limits=madcc.entrypoints.kraken_limits:main',
+            'crypto_assets=madcc.entrypoints.crypto_assets:main',
         ],
     },
 )

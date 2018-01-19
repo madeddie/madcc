@@ -8,6 +8,8 @@ name = "pypi"
 [packages]
 
 krakenex = "*"
+coinmarketcap = "*"
+tabulate = "*"
 
 
 [dev-packages]
