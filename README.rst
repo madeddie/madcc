@@ -1,5 +1,10 @@
-Useful cryptocurrency tools
-===========================
+madcc: Useful cryptocurrency tools
+==================================
+
+.. image:: https://img.shields.io/pypi/v/madcc.svg
+  :target: https://pypi.python.org/pypi/madcc
+.. image:: https://travis-ci.org/madeddie/madcc.svg?branch=master
+  :target: https://travis-ci.org/madeddie/madcc
 
 A collection of useful cryptocurrency utils and functions. Makes use of:
 
