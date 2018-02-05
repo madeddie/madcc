@@ -1,0 +1,22 @@
+language: python
+python:
+- '3.3'
+- '3.4'
+- '3.5'
+- 3.5-dev
+- '3.6'
+- 3.6-dev
+- 3.7-dev
+- nightly
+install:
+- pip install -r requirements.txt
+script:
+- true
+deploy:
+  provider: pypi
+  user: madeddie
+  password:
+    secure: UfftVM25dhvNv3wDvtkuxNjfkVeTPtu6qS+DLA9dcopHwjBxoHhHttDCPDy3OKvasuwsmAh7USLWBjCkUd5AjsjPvELvPl5OphGzD9db7wbQsrpKZaX2oydv44gM38o1HfK6B2QzPhA63fL0Gi0pDAWyJAg1AQwhc2JhID8/p3BjJpHqyebQ73/XB6TksMJLRz6gj04tEzc0kW+a59incD7cgBXq01aeJAoaLUoaNOCozbQNnHw9Wx97Tbt6rgSKGiA3lgaodnNe5REiEGxXloFBza3EfgYJREuteiMRLI+nqmy/5KlSHxhcmy0EnrcfXOdULsi2CUwpVYKNHya/BN45ZTcnoYW1TJB6PSXVQ7BfNnAk7kyzhqOjMK+n8KoG3adcDdz1XPH/01nEYtK/ZPjr2f6HZb9kny8LbyJvcBej1oR2OE8pPZ+L2aSIfdHkyXlW62NT0FQEYzaUyUV5+Tyxj6xCcfDTIeD6horBy+pTdBvon1aFGdKC005PF6EC+TrNkXj6sxx+wQJxEFN1sXOo/yeIUxNnUAvzJVENjZY8CoLxLw/C70PwfwNGLfG9neTAIwXuktrkwV4FoHMcBvoj0BJq3QxBfZojGxrLzbTCpVLITDFU/PzhAG8H3V03PRfjTjR1/7KXc6LLbI9t0OWbKrZkfh8B9FfbTw5hS1M=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true

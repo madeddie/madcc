@@ -21,6 +21,22 @@ class KrakenUtils(object):
             print('Kraken API failure')
             sys.exit(1)
 
+    def _init_auth_file(self):
+        """Create default auth file if it does not exist."""
+        auth_path = settings.user_dir.joinpath('kraken.auth')
+        if not auth_path.is_file():
+            answer = input(
+                'Would you like to create the kraken_auth file? (yes|no) '
+            ).lower().strip()
+            if answer in ('y', 'yes'):
+                api_key = input('Enter your kraken api key: ').strip()
+                api_secret = input('Enter your kraken api secret: ').strip()
+                with auth_path.open(mode='w') as auth_file:
+                    auth_file.write(api_key)
+                    auth_file.write(api_secret)
+            else:
+                print('Only public api calls allowed')
+
     def _set_auth(self, auth_file=None):
         """Read the api auth data from file"""
         self.api_key, self.api_secret = open(auth_file).read().splitlines()

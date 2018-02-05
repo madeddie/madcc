@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-import json
 import re
 import sys
-import time
-from datetime import datetime
 
 import requests
+from clint.arguments import Args
 from coinmarketcap import Market
 from tabulate import tabulate
 
@@ -24,18 +22,22 @@ def convert(symbol, amount, currency):
         return([symbol, amount, 1, amount])
     else:
         base_url = 'https://api.fixer.io/latest'
-        # TODO: check if we can reach the API and the result is valid
         res = requests.get(
             base_url,
             params={'base': symbol.upper(), 'symbols': currency.upper()}
         )
+        res.raise_for_status()
         rate = res.json()['rates'][currency.upper()]
         return([symbol, amount, rate, amount * rate])
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1].upper() in currencies:
-        currency = sys.argv.pop(1)
+    args = Args()
+
+    if next(iter(args.grouped.get('--currency', [])), '').upper() in currencies:
+        currency = args.grouped.get('--currency', {}).get(0)
+    elif str(args.last or '').upper() in currencies:
+        currency = args.last
     else:
         currency = 'eur'
 
@@ -44,10 +46,12 @@ def main():
     else:
         decimals = 2
 
-    # TODO check if file exists and any results return
-    # crypto_data = [line.strip('- \n').split() for line in open(crypto_file, 'r') if line.startswith('-')]
     m = re.compile(r'%s.*?%s' % ('# cryptocurrency', '#'), re.S)
-    crypto_data = [line.strip('- \n').split() for line in m.search(open(crypto_file).read()).group(0).split('\n') if line.startswith('-')]
+    try:
+        crypto_data = [line.strip('- \n').split() for line in m.search(open(crypto_file).read()).group(0).split('\n') if line.startswith('-')]
+    except IOError as e:
+        print('Unable to open crypto_data file: {}'.format(3))
+        sys.exit()
 
     coinmarketcap = Market()
     full_ticker_data = coinmarketcap.ticker(start=0, limit=2000, convert=currency)
