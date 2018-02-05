@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='madcc',
-    version='0.0.2.dev8',
+    version='0.0.2.dev9',
     description='madtech cryptocurrency functions',
     long_description=long_description,
     url='https://github.com/madeddie/madcc',
@@ -33,6 +33,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
     install_requires=[
+        'clint',
         'coinmarketcap',
         'krakenex',
         'requests',
