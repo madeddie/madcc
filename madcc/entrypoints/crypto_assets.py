@@ -1,14 +1,27 @@
 #!/usr/bin/env python
+import configparser
 import re
 import sys
 
 import requests
+from clint import resources
 from clint.arguments import Args
 from coinmarketcap import Market
 from tabulate import tabulate
 
-ticker_baseurl = 'https://api.coinmarketcap.com/v1/ticker/'
-crypto_file = '/Users/madeddie/Documents/notes/crypto.txt'
+resources.init('madtech', 'madcc')
+if not resources.user.read('config.ini'):
+    config = configparser.ConfigParser()
+    config['crypto_assets'] = {}
+    config['crypto_assets']['crypto_file'] = resources.user.path + '/crypto.txt'
+    config['crypto_assets']['currency'] = 'eur'
+    with resources.user.open('config.ini', 'w') as configfile:
+        config.write(configfile)
+else:
+    config = configparser.ConfigParser()
+    with resources.user.open('config.ini', 'r') as configfile:
+        config.read_file(configfile)
+
 missing_currencies = ('BTC', 'USD')
 currencies = ('AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR',
               'GBP', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW', 'MXN',
@@ -17,7 +30,7 @@ currencies = ('AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR',
 
 
 def convert(symbol, amount, currency):
-    # Convert USD and EUR to their counterparts
+    # Convert USD to EUR and vice versa
     if symbol.upper() == currency.upper():
         return([symbol, amount, 1, amount])
     else:
@@ -39,7 +52,7 @@ def main():
     elif str(args.last or '').upper() in currencies:
         currency = args.last
     else:
-        currency = 'eur'
+        currency = config['crypto_assets']['currency'].lower()
 
     if currency == 'btc':
         decimals = 10
@@ -48,9 +61,9 @@ def main():
 
     m = re.compile(r'%s.*?%s' % ('# cryptocurrency', '#'), re.S)
     try:
-        crypto_data = [line.strip('- \n').split() for line in m.search(open(crypto_file).read()).group(0).split('\n') if line.startswith('-')]
+        crypto_data = [line.strip('- \n').split() for line in m.search(open(config['crypto_assets']['crypto_file']).read()).group(0).split('\n') if line.startswith('-')]
     except IOError as e:
-        print('Unable to open crypto_data file: {}'.format(3))
+        print('Unable to open crypto_data file: {}'.format(config['crypto_assets']['crypto_file']))
         sys.exit()
 
     coinmarketcap = Market()
