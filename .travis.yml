@@ -1,6 +1,6 @@
 language: python
 python:
-  - '3.3'
+  # - '3.3' # pipenv error
   - '3.4'
   - '3.5'
   - 3.5-dev
@@ -15,7 +15,8 @@ install:
 script:
   - pipenv run -- pytest --cov=madcc tests
 after_success:
-  - codecov
+  - pipenv run -- coverage xml
+  - pipenv run -- codecov
 deploy:
   provider: pypi
   user: madeddie
