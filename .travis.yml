@@ -14,7 +14,7 @@ install:
   - pipenv install --dev --skip-lock
   - pip install -e .
 script:
-  - pytest --cov=madcc tests
+  - pytest --cov=madcc --cov-branch tests
 after_success:
   - coverage xml
   - codecov
