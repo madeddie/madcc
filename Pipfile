@@ -17,6 +17,11 @@ clint = "*"
 [dev-packages]
 
 ipython = "*"
+pytest = "*"
+mock = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+codecov = "*"
 
 
 [requires]

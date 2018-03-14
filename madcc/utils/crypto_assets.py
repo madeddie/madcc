@@ -12,15 +12,17 @@ CURRENCIES = ('AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR',
               'MYR', 'NOK', 'NZD', 'PHP', 'PKR', 'PLN', 'RUB', 'SEK', 'SGD',
               'THB', 'TRY', 'TWD', 'ZAR') + MISSING_CURRENCIES
 
+currency_api = 'https://api.fixer.io/latest'
+
 
 def convert(symbol, amount, currency):
-    # Convert USD to EUR and vice versa
+    # Covert USD to EUR and vice versa
+    # TODO: do something when api fails
     if symbol.upper() == currency.upper():
         return([symbol, amount, 1, amount])
     else:
-        base_url = 'https://api.fixer.io/latest'
         res = requests.get(
-            base_url,
+            currency_api,
             params={'base': symbol.upper(), 'symbols': currency.upper()}
         )
         res.raise_for_status()
