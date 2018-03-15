@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='madcc',
-    version='0.0.2-alpha.1',
+    version='0.0.2-alpha.2',
     description='madtech cryptocurrency functions',
     long_description=long_description,
     url='https://github.com/madeddie/madcc',
@@ -28,7 +28,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='personal project cryptocurrency kraken gdax',
+    keywords='personal project cryptocurrency kraken gdax coinmarketcap',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
     install_requires=[
@@ -46,4 +46,13 @@ setup(
             'crypto_assets=madcc.entrypoints.crypto_assets:main',
         ],
     },
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+        'mock',
+        'pytest-mock',
+        'pytest-cov',
+    ],
 )

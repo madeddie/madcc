@@ -10,8 +10,8 @@ name = "pypi"
 krakenex = "*"
 coinmarketcap = "*"
 tabulate = "*"
-blockchain = "*"
 clint = "*"
+requests = "*"
 
 
 [dev-packages]
