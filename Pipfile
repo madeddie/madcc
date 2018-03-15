@@ -10,8 +10,8 @@ name = "pypi"
 krakenex = "*"
 coinmarketcap = "*"
 tabulate = "*"
-blockchain = "*"
 clint = "*"
+requests = "*"
 
 
 [dev-packages]
@@ -22,6 +22,8 @@ mock = "*"
 pytest-mock = "*"
 pytest-cov = "*"
 codecov = "*"
+coveralls = "*"
+requests-mock = "*"
 
 
 [requires]

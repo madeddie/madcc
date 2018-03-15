@@ -95,14 +95,11 @@ def demo():
     decimals = 2
 
     # Just for demo, not actual data
-    # crypto_data = parse_crypto_file(config['crypto_assets']['crypto_file'])
     crypto_data = [['bitcoin', '10.5'], ['ethereum', '109.25']]
-    if not crypto_data:
-        sys.exit(1)
 
     headers, crypto_table = generate_crypto_table(currency, crypto_data)
-    print(tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals)))
+    return tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals))
 
 
-if __name__ == "__main__":
-    demo()
+if __name__ == "__main__":  # pragma: no cover
+    print(demo())

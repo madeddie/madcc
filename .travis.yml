@@ -1,6 +1,6 @@
 language: python
 python:
-  - '3.3'
+  # - '2.7' # module krakenex only support python 3+
   - '3.4'
   - '3.5'
   - 3.5-dev
@@ -11,10 +11,12 @@ python:
 install:
   - pip install -U pipenv
   - pipenv install --dev --skip-lock
+  - pip install -e .
 script:
-  - pytest --cov=./
+  - pytest --cov=madcc --cov-report xml --cov-report=term tests
 after_success:
   - codecov
+  - coveralls
 deploy:
   provider: pypi
   user: madeddie

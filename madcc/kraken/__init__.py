@@ -1,1 +1,1 @@
-from . import kraken
+from .kraken import KrakenUtils
