@@ -23,6 +23,7 @@ pytest-mock = "*"
 pytest-cov = "*"
 codecov = "*"
 coveralls = "*"
+requests-mock = "*"
 
 
 [requires]
