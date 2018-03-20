@@ -1,10 +1,14 @@
 from ..kraken.kraken import KrakenUtils
 
 
-def main():
-    k = KrakenUtils()
+def main(authfile=None):
+    k = KrakenUtils(authfile=authfile)
     deposit_limit = k.deposit_limit()
     withdraw_limit = k.withdraw_limit()
 
-    print('deposit max: {} EUR'.format(deposit_limit))
-    print('withdraw max: {} BTC'.format(withdraw_limit))
+    return 'deposit max: {} EUR\nwithdraw max: {} BTC'.format(deposit_limit,
+                                                              withdraw_limit)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    print(main())
