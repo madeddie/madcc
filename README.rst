@@ -1,11 +1,11 @@
 madcc: Useful cryptocurrency tools
 ==================================
 
-.. image:: https://img.shields.io/pypi/v/madcc.svg
+.. image:: https://pypip.in/v/madcc/badge.png
   :target: https://pypi.python.org/pypi/madcc
 .. image:: https://travis-ci.org/madeddie/madcc.svg?branch=master
   :target: https://travis-ci.org/madeddie/madcc
-.. image:: https://coveralls.io/repos/github/madeddie/madcc/badge.svg
+.. image:: https://img.shields.io/coveralls/github/madeddie/madcc.svg
   :target: https://coveralls.io/github/madeddie/madcc
 .. image:: https://codecov.io/gh/madeddie/madcc/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/madeddie/madcc
