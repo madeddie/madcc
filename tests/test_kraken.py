@@ -1,4 +1,5 @@
 import pytest
+import requests_mock
 
 from madcc.kraken import KrakenUtils
 from madcc.entrypoints import kraken_limits
@@ -8,8 +9,8 @@ from madcc.entrypoints import kraken_limits
 raw_kraken_auth = """c29tZV9hcGlfa2V5Cg==
 c29tZV9hcGlfc2VjcmV0Cg=="""
 
-wrong_credentials_result = """deposit max: False EUR
-withdraw max: False BTC"""
+kraken_limits_result = """deposit max: 100 EUR
+withdraw max: 100 BTC"""
 
 
 @pytest.fixture(scope='session')
@@ -17,11 +18,46 @@ def config_dir(tmpdir_factory):
     return tmpdir_factory.mktemp('madcc')
 
 
-# TODO: this tests the krakenex api more than my code
-# also mock the kraken api to test failures better and circumvent network
-# access
-def test_kraken_limits_wrong_credentials(mocker, config_dir):
+def test_kraken_utils_set_auth(config_dir):
     config_dir.join('kraken.auth').write(raw_kraken_auth)
-    result = kraken_limits.main(str(config_dir.join('kraken.auth')))
+    kraken = KrakenUtils(str(config_dir.join('kraken.auth')))
 
-    assert result == wrong_credentials_result
+    assert kraken.api_key == raw_kraken_auth.splitlines()[0]
+    assert kraken.api_secret == raw_kraken_auth.splitlines()[1]
+
+
+def test_kraken_utils_clint_auth():
+    with pytest.raises(SystemExit):
+        kraken = KrakenUtils()
+
+
+def test_kraken_utils_api_live(config_dir):
+    kraken = KrakenUtils(str(config_dir.join('kraken.auth')))
+    with requests_mock.Mocker() as mock:
+        mock.post('https://api.kraken.com/0/public/Time', json={'error': []})
+
+        assert kraken.api_live() is True
+
+
+def test_kraken_utils_api_dead(config_dir):
+    kraken = KrakenUtils(str(config_dir.join('kraken.auth')))
+    with requests_mock.Mocker() as mock:
+        mock.post('https://api.kraken.com/0/public/Time', json={'error': ['something']})
+
+        assert kraken.api_live() is False
+
+
+def test_kraken_limits(config_dir):
+    with requests_mock.Mocker() as mock:
+        mock.post('https://api.kraken.com/0/public/Time', json={'error': []})
+        mock.post('https://api.kraken.com/0/private/DepositMethods', json={
+            'error': [],
+            'result': [{'limit': 100}]
+        })
+        mock.post('https://api.kraken.com/0/private/WithdrawInfo', json={
+            'error': [],
+            'result': {'limit': 100}
+        })
+        result = kraken_limits.main(str(config_dir.join('kraken.auth')))
+
+    assert result == kraken_limits_result
