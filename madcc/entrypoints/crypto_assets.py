@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from ..utils import crypto_assets
 
-import configparser
+import json
 import sys
 
 from clint import resources
@@ -11,22 +11,22 @@ from tabulate import tabulate
 
 def main():
     resources.init('madtech', 'madcc')
-    if not resources.user.read('config.ini'):
-        config = configparser.ConfigParser()
-        config['crypto_assets'] = {}
+    if not resources.user.read('config.json'):
+        config = dict()
+        config['crypto_assets'] = dict()
         config['crypto_assets']['crypto_file'] = resources.user.path + '/crypto.txt'
         config['crypto_assets']['currency'] = 'eur'
-        with resources.user.open('config.ini', 'w') as configfile:
-            config.write(configfile)
+
+        configfile = resources.user.open('config.json', 'w')
+        configfile.write(json.dumps(config))
     else:
-        config = configparser.ConfigParser()
-        with resources.user.open('config.ini', 'r') as configfile:
-            config.read_file(configfile)
+        configfile = resources.user.open('config.json', 'r')
+        config = json.loads(configfile.read())
 
     args = Args()
 
     if next(iter(args.grouped.get('--currency', [])), '').upper() in crypto_assets.CURRENCIES:
-        currency = args.grouped.get('--currency', {}).get(0)
+        currency = next(iter(args.grouped.get('--currency', [])), '')
     elif str(args.last or '').upper() in crypto_assets.CURRENCIES:
         currency = args.last
     else:
@@ -39,11 +39,11 @@ def main():
 
     crypto_data = crypto_assets.parse_crypto_file(config['crypto_assets']['crypto_file'])
     if not crypto_data:
-        sys.exit(1)
+        return False
 
     headers, crypto_table = crypto_assets.generate_crypto_table(currency, crypto_data)
-    print(tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals)))
+    return tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals))
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__":  # pragma: no cover
+    print(main())

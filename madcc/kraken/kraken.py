@@ -11,10 +11,15 @@ from ..conf import settings
 
 
 class KrakenUtils(object):
-    def __init__(self):
+    def __init__(self, authfile=None):
         # TODO: get config somewhere else, don't load it in the module?
+        # probably going to use clint like crypto_assets
         settings.init()
-        self._set_auth(str(settings.user_dir.joinpath('kraken.auth')))
+        if not authfile:
+            self.auth_file = str(settings.user_dir.joinpath('kraken.auth'))
+        else:
+            self.auth_file = authfile
+        self._set_auth()
         self.api = krakenex.API(key=self.api_key, secret=self.api_secret)
         if not self.api_live():
             # TODO: use logging instead of print
@@ -37,9 +42,9 @@ class KrakenUtils(object):
             else:
                 print('Only public api calls allowed')
 
-    def _set_auth(self, auth_file=None):
+    def _set_auth(self):
         """Read the api auth data from file"""
-        self.api_key, self.api_secret = open(auth_file).read().splitlines()
+        self.api_key, self.api_secret = open(self.auth_file).read().splitlines()
 
     def api_live(self):
         res = self.api.query_public('Time')

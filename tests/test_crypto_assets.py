@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 
 from madcc.utils import crypto_assets
@@ -45,7 +43,7 @@ generated_crypto_table = (
     ]
 )
 
-demo_output = """symbol      amount      %    eur price    eur total
+crypto_output = """symbol      amount      %    eur price    eur total
 --------  --------  -----  -----------  -----------
 bitcoin      12.05  52.35      6615.32     79714.56
 ethereum     80.20  25.88       491.39     39409.12
@@ -57,6 +55,7 @@ total                                     152261.37"""
 def test_convert(mocker):
     mocker.patch('requests.get')
     crypto_assets.convert('eur', 10, 'usd')
+
     crypto_assets.requests.get.assert_called_with(
         crypto_assets.currency_api,
         params={'base': 'EUR', 'symbols': 'USD'}
@@ -68,7 +67,7 @@ def test_convert_same():
 
 
 def test_parse_crypto_file(mocker):
-    with patch('builtins.open', mocker.mock_open(read_data=raw_crypto_file)) as m:
+    with mocker.mock_module.patch('builtins.open', mocker.mock_open(read_data=raw_crypto_file)) as m:
         result = crypto_assets.parse_crypto_file('crypto_file')
 
     m.assert_called_once_with('crypto_file')
@@ -76,8 +75,7 @@ def test_parse_crypto_file(mocker):
 
 
 def test_parse_crypto_file_fail_open(mocker):
-
-    with patch('builtins.open', mocker.mock_open()) as m:
+    with mocker.mock_module.patch('builtins.open', mocker.mock_open()) as m:
         m.side_effect = IOError
         result = crypto_assets.parse_crypto_file('crypto_file')
 
@@ -94,8 +92,8 @@ def test_retrieve_ticker_data(mocker):
 
 def test_generate_crypto_table(mocker):
     mocker.patch.object(crypto_assets, 'retrieve_ticker_data', return_value=full_ticker_data)
-
     result = crypto_assets.generate_crypto_table('eur', parsed_crypto_file)
+
     assert result == generated_crypto_table
 
 
@@ -105,4 +103,94 @@ def test_generate_crypto_table_missing_data():
 
 def test_demo(mocker):
     mocker.patch.object(crypto_assets, 'generate_crypto_table', return_value=generated_crypto_table)
-    assert crypto_assets.demo() == demo_output
+
+    assert crypto_assets.demo() == crypto_output
+
+
+@pytest.fixture(scope='session')
+def config_dir(tmpdir_factory):
+    return tmpdir_factory.mktemp('madcc')
+
+
+def test_crypto_assets_cli_no_config(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.resources.user.open.assert_called_once_with('config.json', 'w')
+
+
+def test_crypto_assets_cli_without_data(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = True
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.resources.user.open.assert_called_once_with('config.json', 'r')
+    assert crypto_assets_cli.main() is False
+
+
+def test_crypto_assets_cli_with_data(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    mocker.patch.object(crypto_assets_cli, 'crypto_assets')
+    crypto_assets_cli.crypto_assets.generate_crypto_table.return_value = generated_crypto_table
+    config_dir.join('crypto.txt').write(raw_crypto_file)
+
+    assert crypto_assets_cli.main() == crypto_output
+
+
+def test_crypto_assets_cli_currency_eur(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    mocker.patch('madcc.utils.crypto_assets.generate_crypto_table', autospect=True, return_value=generated_crypto_table)
+    mocker.patch.object(crypto_assets_cli, 'Args')
+    crypto_assets_cli.Args.return_value.last = 'eur'
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file)
+
+
+def test_crypto_assets_cli_currency_usd(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    mocker.patch('madcc.utils.crypto_assets.generate_crypto_table', autospect=True, return_value=generated_crypto_table)
+    mocker.patch.object(crypto_assets_cli, 'Args')
+    crypto_assets_cli.Args.return_value.last = 'usd'
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('usd', parsed_crypto_file)
+
+
+def test_crypto_assets_cli_currency_btc(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    mocker.patch('madcc.utils.crypto_assets.generate_crypto_table', autospect=True, return_value=generated_crypto_table)
+    mocker.patch.object(crypto_assets_cli, 'Args')
+    crypto_assets_cli.Args.return_value.last = 'btc'
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('btc', parsed_crypto_file)
+
+
+def test_crypto_assets_cli_currency_unknown(mocker, config_dir):
+    mocker.patch.object(crypto_assets_cli, 'resources')
+    crypto_assets_cli.resources.user.read.return_value = None
+    crypto_assets_cli.resources.user.path = str(config_dir)
+    crypto_assets_cli.resources.user.open.return_value = config_dir.join('config.json')
+    mocker.patch('madcc.utils.crypto_assets.generate_crypto_table', autospect=True, return_value=generated_crypto_table)
+    mocker.patch.object(crypto_assets_cli, 'Args')
+    crypto_assets_cli.Args.return_value.last = 'abc'
+    crypto_assets_cli.main()
+
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file)
