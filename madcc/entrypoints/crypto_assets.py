@@ -18,7 +18,7 @@ def main():
         config['crypto_assets']['currency'] = 'eur'
 
         configfile = resources.user.open('config.json', 'w')
-        configfile.write(json.dumps(config))
+        configfile.write(json.dumps(config, sort_keys=True, indent=4))
     else:
         configfile = resources.user.open('config.json', 'r')
         config = json.loads(configfile.read())

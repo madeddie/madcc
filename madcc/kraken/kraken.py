@@ -6,20 +6,16 @@ import sys
 
 import krakenex
 import requests
-
-from ..conf import settings
+from clint import resources
 
 
 class KrakenUtils(object):
     def __init__(self, authfile=None):
-        # TODO: get config somewhere else, don't load it in the module?
-        # probably going to use clint like crypto_assets
-        settings.init()
-        if not authfile:
-            self.auth_file = str(settings.user_dir.joinpath('kraken.auth'))
-        else:
-            self.auth_file = authfile
+        self._auth_file = authfile
         self._set_auth()
+        if not self.api_key or not self.api_secret:
+            print('No api key or secret found')
+            sys.exit(1)
         self.api = krakenex.API(key=self.api_key, secret=self.api_secret)
         if not self.api_live():
             # TODO: use logging instead of print
@@ -43,8 +39,16 @@ class KrakenUtils(object):
                 print('Only public api calls allowed')
 
     def _set_auth(self):
+        self.api_key = None
+        self.api_secret = None
         """Read the api auth data from file"""
-        self.api_key, self.api_secret = open(self.auth_file).read().splitlines()
+        if self._auth_file:
+            self.api_key, self.api_secret = open(self._auth_file).read().splitlines()
+        else:
+            resources.init('madtech', 'madcc')
+            self._auth_file = resources.user.path + '/kraken.auth'
+            if resources.user.read('kraken.auth'):
+                self.api_key, self.api_secret = resources.user.read('kraken.auth').splitlines()
 
     def api_live(self):
         res = self.api.query_public('Time')
