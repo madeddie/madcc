@@ -10,7 +10,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='madcc',
-    version='0.0.2-alpha.3',
+    version='0.1.0',
     description='madtech cryptocurrency functions',
     long_description=long_description,
     url='https://github.com/madeddie/madcc',
@@ -18,7 +18,7 @@ setup(
     author_email='edwin@madtech.cx',
     license='MIT',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Utilities',
         'License :: OSI Approved :: MIT License',
