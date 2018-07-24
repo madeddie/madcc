@@ -41,7 +41,11 @@ def main():
     if not crypto_data:
         return False
 
-    headers, crypto_table = crypto_assets.generate_crypto_table(currency, crypto_data)
+    headers, crypto_table = crypto_assets.generate_crypto_table(
+        currency,
+        crypto_data,
+        config['crypto_assets']['currency_api']
+    )
     return tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals))
 
 

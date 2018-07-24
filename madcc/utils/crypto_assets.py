@@ -12,10 +12,8 @@ CURRENCIES = ('AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR',
               'MYR', 'NOK', 'NZD', 'PHP', 'PKR', 'PLN', 'RUB', 'SEK', 'SGD',
               'THB', 'TRY', 'TWD', 'ZAR') + MISSING_CURRENCIES
 
-currency_api = 'https://api.fixer.io/latest'
 
-
-def convert(symbol, amount, currency):
+def convert(symbol, amount, currency, currency_api):
     # Covert USD to EUR and vice versa
     # TODO: do something when api fails
     if symbol.upper() == currency.upper():
@@ -53,7 +51,7 @@ def retrieve_ticker_data(currency):
     return coinmarketcap.ticker(start=0, limit=2000, convert=currency)
 
 
-def generate_crypto_table(currency, crypto_data):
+def generate_crypto_table(currency, crypto_data, currency_api):
     # Generate list of lists with crypto_data to display
     if not crypto_data:
         return False
@@ -68,7 +66,7 @@ def generate_crypto_table(currency, crypto_data):
         symbol = line[0]
         amount = float(line[1])
         if symbol.upper() in ('EUR', 'USD'):
-            outcome = convert(symbol, amount, currency)
+            outcome = convert(symbol, amount, currency, currency_api)
             table.append(outcome)
             portfolio_total += outcome[3]
             continue
