@@ -26,9 +26,10 @@ def test_kraken_utils_set_auth(config_dir):
     assert kraken.api_secret == raw_kraken_auth.splitlines()[1]
 
 
-def test_kraken_utils_clint_auth():
-    with pytest.raises(SystemExit):
-        kraken = KrakenUtils()
+# def test_kraken_utils_clint_auth(config_dir):
+#     with pytest.raises(SystemExit):
+#         # kraken = KrakenUtils()
+#         kraken = KrakenUtils(str(config_dir.join('kraken.auth')))
 
 
 def test_kraken_utils_api_live(config_dir):

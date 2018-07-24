@@ -5,6 +5,8 @@ from madcc.entrypoints import crypto_assets as crypto_assets_cli
 
 
 # Testing data
+currency_api = 'http://data.fixer.io/latest?access_key=S0m3k3y'
+
 raw_crypto_file = """
 # cryptocurrency
 
@@ -54,16 +56,16 @@ total                                     152261.37"""
 
 def test_convert(mocker):
     mocker.patch('requests.get')
-    crypto_assets.convert('eur', 10, 'usd')
+    crypto_assets.convert('eur', 10, 'usd', currency_api)
 
     crypto_assets.requests.get.assert_called_with(
-        crypto_assets.currency_api,
+        currency_api,
         params={'base': 'EUR', 'symbols': 'USD'}
     )
 
 
 def test_convert_same():
-    assert crypto_assets.convert('eur', 10, 'eur') == ['eur', 10, 1, 10]
+    assert crypto_assets.convert('eur', 10, 'eur', currency_api) == ['eur', 10, 1, 10]
 
 
 def test_parse_crypto_file(mocker):
@@ -92,13 +94,13 @@ def test_retrieve_ticker_data(mocker):
 
 def test_generate_crypto_table(mocker):
     mocker.patch.object(crypto_assets, 'retrieve_ticker_data', return_value=full_ticker_data)
-    result = crypto_assets.generate_crypto_table('eur', parsed_crypto_file)
+    result = crypto_assets.generate_crypto_table('eur', parsed_crypto_file, currency_api)
 
     assert result == generated_crypto_table
 
 
 def test_generate_crypto_table_missing_data():
-    assert crypto_assets.generate_crypto_table('eur', None) is False
+    assert crypto_assets.generate_crypto_table('eur', None, currency_api) is False
 
 
 def test_demo(mocker):
@@ -154,7 +156,7 @@ def test_crypto_assets_cli_currency_eur(mocker, config_dir):
     crypto_assets_cli.Args.return_value.last = 'eur'
     crypto_assets_cli.main()
 
-    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file)
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file, currency_api)
 
 
 def test_crypto_assets_cli_currency_usd(mocker, config_dir):
@@ -167,7 +169,7 @@ def test_crypto_assets_cli_currency_usd(mocker, config_dir):
     crypto_assets_cli.Args.return_value.last = 'usd'
     crypto_assets_cli.main()
 
-    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('usd', parsed_crypto_file)
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('usd', parsed_crypto_file, currency_api)
 
 
 def test_crypto_assets_cli_currency_btc(mocker, config_dir):
@@ -180,7 +182,7 @@ def test_crypto_assets_cli_currency_btc(mocker, config_dir):
     crypto_assets_cli.Args.return_value.last = 'btc'
     crypto_assets_cli.main()
 
-    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('btc', parsed_crypto_file)
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('btc', parsed_crypto_file, currency_api)
 
 
 def test_crypto_assets_cli_currency_unknown(mocker, config_dir):
@@ -193,4 +195,4 @@ def test_crypto_assets_cli_currency_unknown(mocker, config_dir):
     crypto_assets_cli.Args.return_value.last = 'abc'
     crypto_assets_cli.main()
 
-    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file)
+    crypto_assets_cli.crypto_assets.generate_crypto_table.assert_called_with('eur', parsed_crypto_file, currency_api)

@@ -16,6 +16,7 @@ def main():
         config['crypto_assets'] = dict()
         config['crypto_assets']['crypto_file'] = resources.user.path + '/crypto.txt'
         config['crypto_assets']['currency'] = 'eur'
+        config['crypto_assets']['currency_api'] = 'http://data.fixer.io/latest?access_key=S0m3k3y'
 
         configfile = resources.user.open('config.json', 'w')
         configfile.write(json.dumps(config, sort_keys=True, indent=4))
