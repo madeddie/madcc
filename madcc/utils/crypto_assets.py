@@ -48,7 +48,18 @@ def parse_crypto_file(crypto_file):
 def retrieve_ticker_data(currency):
     # TODO: do something when api call fails
     coinmarketcap = Market()
-    return coinmarketcap.ticker(start=0, limit=2000, convert=currency)
+    max_symbols = coinmarketcap.listings()['metadata']['num_cryptocurrencies']
+    full_ticker_data = dict()
+    x = 0
+    while x < max_symbols:
+      ticker = coinmarketcap.ticker(start=x, limit=100, sort='id')
+      if ticker['data']:
+          full_ticker_data.update(ticker['data'])
+          x += 100
+      else:
+          print(ticker)
+          break
+    return full_ticker_data
 
 
 def generate_crypto_table(currency, crypto_data, currency_api):
@@ -70,8 +81,8 @@ def generate_crypto_table(currency, crypto_data, currency_api):
             table.append(outcome)
             portfolio_total += outcome[3]
             continue
-        ticker_data = next((x for x in full_ticker_data if x['id'] == symbol))
-        price = float(ticker_data['price_{}'.format(currency)])
+        ticker_data = next((full_ticker_data[x] for x in full_ticker_data if full_ticker_data[x]['website_slug'].lower() == symbol.lower()))
+        price = float(ticker_data['quotes'][currency.upper()]['price'])
         total = amount * price
         portfolio_total += total
         table.append([symbol, amount, price, total])
