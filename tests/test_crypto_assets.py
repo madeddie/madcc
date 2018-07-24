@@ -28,11 +28,11 @@ parsed_crypto_file = [
     ['eur', '500']
 ]
 
-full_ticker_data = [
-    {'id': 'bitcoin', 'price_eur': '6615.31631639'},
-    {'id': 'ethereum', 'price_eur': '491.385586985'},
-    {'id': 'litecoin', 'price_eur': '130.550739603'}
-]
+full_ticker_data = {
+    '1': {'id': 1, 'name': 'Bitcoin', 'quotes': {'EUR': {'price': 6615.31631639}}, 'rank': 1, 'symbol': 'BTC', 'website_slug': 'bitcoin'},
+    '2': {'id': 2, 'name': 'Litecoin', 'quotes': {'EUR': {'price': 130.550739603}}, 'rank': 7, 'symbol': 'LTC', 'website_slug': 'litecoin'},
+    '1027': {'id': 1027, 'name': 'Ethereum', 'quotes': {'EUR': {'price': 491.385586985}}, 'rank': 2, 'symbol': 'ETH', 'website_slug': 'ethereum'}
+}
 
 generated_crypto_table = (
     ['symbol', 'amount', '%', 'eur price', 'eur total'],
@@ -89,7 +89,7 @@ def test_retrieve_ticker_data(mocker):
     mocker.patch('coinmarketcap.Market.ticker')
     result = crypto_assets.retrieve_ticker_data('eur')
 
-    crypto_assets.Market.ticker.assert_called_with(start=0, limit=2000, convert='eur')
+    crypto_assets.Market.ticker.assert_called_with(limit=100, sort='id', start=1600)
 
 
 def test_generate_crypto_table(mocker):
