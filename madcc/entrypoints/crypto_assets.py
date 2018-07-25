@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ..utils import crypto_assets
+from ..utils.crypto_assets import CryptoAssets, CURRENCIES
 
 import json
 import sys
@@ -16,7 +16,7 @@ def main():
         config['crypto_assets'] = dict()
         config['crypto_assets']['crypto_file'] = resources.user.path + '/crypto.txt'
         config['crypto_assets']['currency'] = 'eur'
-        config['crypto_assets']['currency_api'] = 'http://data.fixer.io/latest?access_key=S0m3k3y'
+        config['crypto_assets']['currency_api'] = 'https://free.currencyconverterapi.com/api/v6/convert'
 
         configfile = resources.user.open('config.json', 'w')
         configfile.write(json.dumps(config, sort_keys=True, indent=4))
@@ -26,9 +26,9 @@ def main():
 
     args = Args()
 
-    if next(iter(args.grouped.get('--currency', [])), '').upper() in crypto_assets.CURRENCIES:
+    if next(iter(args.grouped.get('--currency', [])), '').upper() in CURRENCIES:
         currency = next(iter(args.grouped.get('--currency', [])), '')
-    elif str(args.last or '').upper() in crypto_assets.CURRENCIES:
+    elif str(args.last or '').upper() in CURRENCIES:
         currency = args.last
     else:
         currency = config['crypto_assets']['currency'].lower()
@@ -38,15 +38,12 @@ def main():
     else:
         decimals = 2
 
-    crypto_data = crypto_assets.parse_crypto_file(config['crypto_assets']['crypto_file'])
+    ca = CryptoAssets(config['crypto_assets'], currency, decimals)
+    crypto_data = ca.parse_crypto_file()
     if not crypto_data:
         return False
 
-    headers, crypto_table = crypto_assets.generate_crypto_table(
-        currency,
-        crypto_data,
-        config['crypto_assets']['currency_api']
-    )
+    headers, crypto_table = ca.generate_crypto_table(crypto_data)
     return tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals))
 
 

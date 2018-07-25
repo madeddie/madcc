@@ -13,100 +13,120 @@ CURRENCIES = ('AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'EUR',
               'THB', 'TRY', 'TWD', 'ZAR') + MISSING_CURRENCIES
 
 
-def convert(symbol, amount, currency, currency_api):
-    # Covert USD to EUR and vice versa
-    # TODO: do something when api fails
-    if symbol.upper() == currency.upper():
-        return([symbol, amount, 1, amount])
-    else:
-        res = requests.get(
-            currency_api,
-            params={'base': symbol.upper(), 'symbols': currency.upper()}
-        )
-        res.raise_for_status()
-        rate = res.json()['rates'][currency.upper()]
-        return([symbol, amount, rate, amount * rate])
+class CryptoAssets:
+    def __init__(self, config, currency, decimals):
+        self.config = config
+        self.currency = currency
+        self.decimals = decimals
 
+    def convert(self, symbol, amount):
+        # Covert fiat currencies from symbol to configured currency
+        # TODO: do something when api fails
+        if symbol.upper() == self.currency.upper():
+            return([symbol, amount, 1, amount])
+        else:
+            convert_pair = '{}_{}'.format(symbol.upper(), self.currency.upper())
+            res = requests.get(
+                self.config['currency_api'],
+                params={
+                    'q': convert_pair,
+                    'compact': 'y'
+                }
+            )
+            res.raise_for_status()
+            rate = res.json()[convert_pair]['val']
+            return([symbol, amount, rate, amount * rate])
 
-def parse_crypto_file(crypto_file):
-    # Parse crypto note file for assets and amounts
-    m = re.compile(r'%s.*?%s' % ('# cryptocurrency', '#'), re.S)
-    try:
-        with open(crypto_file) as f:
-            crypto_data = list()
-            res = m.search(f.read())
-            for line in res.group(0).split('\n'):
-                if line.startswith('-'):
-                    crypto_data.append(line.strip('- \n').split())
-        return crypto_data
+    def parse_crypto_file(self):
+        # Parse crypto note file for assets and amounts
+        m = re.compile(r'%s.*?%s' % ('# cryptocurrency', '#'), re.S)
+        try:
+            with open(self.config['crypto_file']) as f:
+                crypto_data = list()
+                res = m.search(f.read())
+                for line in res.group(0).split('\n'):
+                    if line.startswith('-'):
+                        crypto_data.append(line.strip('- \n').split())
+            return crypto_data
 
-    except IOError as e:
-        print('Unable to open crypto_data file: {}'.format(crypto_file))
-        return False
+        except IOError as e:
+            print('Unable to open crypto_data file: {}'.format(self.config['crypto_file']))
+            return False
 
+    def retrieve_ticker_data(self):
+        # Retrieve full list of ticker data from coinmarketcap
+        # TODO: do something when api call fails
+        # TODO: maybe only retrieve mentioned cryptos, for speed
+        coinmarketcap = Market()
+        max_symbols = coinmarketcap.listings()['metadata']['num_cryptocurrencies']
+        full_ticker_data = dict()
+        x = 0
+        while x < max_symbols:
+            ticker = coinmarketcap.ticker(
+                start=x,
+                limit=100,
+                sort='id',
+                convert=self.currency
+            )
+            if ticker['data']:
+                full_ticker_data.update(ticker['data'])
+                x += 100
+            else:
+                # TODO catch this error
+                print(ticker)
+                break
 
-def retrieve_ticker_data(currency):
-    # TODO: do something when api call fails
-    coinmarketcap = Market()
-    max_symbols = coinmarketcap.listings()['metadata']['num_cryptocurrencies']
-    full_ticker_data = dict()
-    x = 0
-    while x < max_symbols:
-      ticker = coinmarketcap.ticker(start=x, limit=100, sort='id')
-      if ticker['data']:
-          full_ticker_data.update(ticker['data'])
-          x += 100
-      else:
-          print(ticker)
-          break
-    return full_ticker_data
+        return full_ticker_data
 
+    def generate_crypto_table(self, crypto_data):
+        # Generate list of lists with crypto_data to display
+        if not crypto_data:
+            return False
+        full_ticker_data = self.retrieve_ticker_data()
+        portfolio_total = 0
+        headers = [
+            'symbol', 'amount', '%',
+            '{} price'.format(self.currency), '{} total'.format(self.currency)
+        ]
+        table = list()
+        for line in crypto_data:
+            symbol = line[0]
+            amount = float(line[1])
+            if symbol.upper() in ('EUR', 'USD'):
+                outcome = self.convert(symbol, amount)
+                table.append(outcome)
+                portfolio_total += outcome[3]
+                continue
+            ticker_data = next((full_ticker_data[x] for x in full_ticker_data if full_ticker_data[x]['website_slug'].lower() == symbol.lower()))
+            price = float(ticker_data['quotes'][self.currency.upper()]['price'])
+            total = amount * price
+            portfolio_total += total
+            table.append([symbol, amount, price, total])
 
-def generate_crypto_table(currency, crypto_data, currency_api):
-    # Generate list of lists with crypto_data to display
-    if not crypto_data:
-        return False
-    full_ticker_data = retrieve_ticker_data(currency)
-    portfolio_total = 0
-    headers = [
-        'symbol', 'amount', '%',
-        '{} price'.format(currency), '{} total'.format(currency)
-    ]
-    table = list()
-    for line in crypto_data:
-        symbol = line[0]
-        amount = float(line[1])
-        if symbol.upper() in ('EUR', 'USD'):
-            outcome = convert(symbol, amount, currency, currency_api)
-            table.append(outcome)
-            portfolio_total += outcome[3]
-            continue
-        ticker_data = next((full_ticker_data[x] for x in full_ticker_data if full_ticker_data[x]['website_slug'].lower() == symbol.lower()))
-        price = float(ticker_data['quotes'][currency.upper()]['price'])
-        total = amount * price
-        portfolio_total += total
-        table.append([symbol, amount, price, total])
+        for idx, val in enumerate(table):
+            table[idx].insert(-2, round(val[3] / (portfolio_total / 100), 2))
 
-    for idx, val in enumerate(table):
-        table[idx].insert(-2, round(val[3] / (portfolio_total / 100), 2))
+        table.sort(key=lambda x: x[4], reverse=True)
+        table.append([
+            'total', None, None,
+            None, portfolio_total
+        ])
 
-    table.sort(key=lambda x: x[4], reverse=True)
-    table.append([
-        'total', None, None,
-        None, portfolio_total
-    ])
-
-    return headers, table
+        return headers, table
 
 
 def demo():
     currency = 'usd'
     decimals = 2
+    config = {
+        'currency_api': 'https://free.currencyconverterapi.com/api/v6/convert'
+    }
 
     # Just for demo, not actual data
     crypto_data = [['bitcoin', '10.5'], ['ethereum', '109.25']]
 
-    headers, crypto_table = generate_crypto_table(currency, crypto_data)
+    ca = CryptoAssets(config, currency, decimals)
+    headers, crypto_table = ca.generate_crypto_table(crypto_data)
     return tabulate(crypto_table, headers=headers, floatfmt='.{}f'.format(decimals))
 
 
