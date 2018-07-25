@@ -110,6 +110,12 @@ def test_generate_crypto_table(mocker):
     assert result == generated_crypto_table
 
 
+def test_demo(mocker):
+    mocker.patch.object(crypto_assets.CryptoAssets, 'generate_crypto_table', return_value=generated_crypto_table)
+
+    assert crypto_assets.demo() == crypto_output
+
+
 def test_generate_crypto_table_missing_data():
     ca = CryptoAssets(config, 'eur', '')
     assert ca.generate_crypto_table(None) is False
