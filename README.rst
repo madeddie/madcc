@@ -31,4 +31,4 @@ Included functions:
 Scripts:
 
 - kraken_limits - Used to show the current withdraw and deposit limits on Kraken.
-- crypto_assers - Look up value of a list of crypto assets defined in a txt file.
+- crypto_assets - Look up value of a list of crypto assets defined in a txt file.
