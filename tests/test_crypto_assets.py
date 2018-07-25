@@ -33,11 +33,11 @@ parsed_crypto_file = [
     ['eur', '500']
 ]
 
-full_ticker_data = {
-    '1': {'id': 1, 'name': 'Bitcoin', 'quotes': {'EUR': {'price': 6615.31631639}}, 'rank': 1, 'symbol': 'BTC', 'website_slug': 'bitcoin'},
-    '2': {'id': 2, 'name': 'Litecoin', 'quotes': {'EUR': {'price': 130.550739603}}, 'rank': 7, 'symbol': 'LTC', 'website_slug': 'litecoin'},
-    '1027': {'id': 1027, 'name': 'Ethereum', 'quotes': {'EUR': {'price': 491.385586985}}, 'rank': 2, 'symbol': 'ETH', 'website_slug': 'ethereum'}
-}
+full_ticker_data = [
+    {'id': 1, 'name': 'Bitcoin', 'quotes': {'EUR': {'price': 6615.31631639}}, 'rank': 1, 'symbol': 'BTC', 'website_slug': 'bitcoin'},
+    {'id': 2, 'name': 'Litecoin', 'quotes': {'EUR': {'price': 130.550739603}}, 'rank': 7, 'symbol': 'LTC', 'website_slug': 'litecoin'},
+    {'id': 1027, 'name': 'Ethereum', 'quotes': {'EUR': {'price': 491.385586985}}, 'rank': 2, 'symbol': 'ETH', 'website_slug': 'ethereum'}
+]
 
 generated_crypto_table = (
     ['symbol', 'amount', '%', 'eur price', 'eur total'],
@@ -97,9 +97,9 @@ def test_parse_crypto_file_fail_open(mocker):
 def test_retrieve_ticker_data(mocker):
     ca = CryptoAssets(config, 'eur', '')
     mocker.patch('coinmarketcap.Market.ticker')
-    result = ca.retrieve_ticker_data()
+    result = ca.retrieve_ticker_data(parsed_crypto_file)
 
-    crypto_assets.Market.ticker.assert_called_with(convert='eur', limit=100, sort='id', start=1600)
+    crypto_assets.Market.ticker.assert_called_with(1027, convert='eur')
 
 
 def test_generate_crypto_table(mocker):
