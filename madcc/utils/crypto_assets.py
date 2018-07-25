@@ -53,36 +53,25 @@ class CryptoAssets:
             print('Unable to open crypto_data file: {}'.format(self.config['crypto_file']))
             return False
 
-    def retrieve_ticker_data(self):
-        # Retrieve full list of ticker data from coinmarketcap
+    def retrieve_ticker_data(self, crypto_data):
+        # Retrieve list of specified ticker data from coinmarketcap
         # TODO: do something when api call fails
-        # TODO: maybe only retrieve mentioned cryptos, for speed
         coinmarketcap = Market()
-        max_symbols = coinmarketcap.listings()['metadata']['num_cryptocurrencies']
-        full_ticker_data = dict()
-        x = 0
-        while x < max_symbols:
-            ticker = coinmarketcap.ticker(
-                start=x,
-                limit=100,
-                sort='id',
-                convert=self.currency
+        listings = coinmarketcap.listings()
+        ticker_data = list()
+        for idnum in [x['id'] for x in listings['data'] if x['website_slug'] in [z[0] for z in crypto_data]]:
+            ticker_data.append(coinmarketcap.ticker(
+                idnum,
+                convert=self.currency)['data']
             )
-            if ticker['data']:
-                full_ticker_data.update(ticker['data'])
-                x += 100
-            else:
-                # TODO catch this error
-                print(ticker)
-                break
 
-        return full_ticker_data
+        return ticker_data
 
     def generate_crypto_table(self, crypto_data):
         # Generate list of lists with crypto_data to display
         if not crypto_data:
             return False
-        full_ticker_data = self.retrieve_ticker_data()
+        ticker_data = self.retrieve_ticker_data(crypto_data)
         portfolio_total = 0
         headers = [
             'symbol', 'amount', '%',
@@ -97,9 +86,8 @@ class CryptoAssets:
                 table.append(outcome)
                 portfolio_total += outcome[3]
                 continue
-            ticker_data = next((full_ticker_data[x] for x in full_ticker_data if full_ticker_data[x]['website_slug'].lower() == symbol.lower()))
-            price = float(ticker_data['quotes'][self.currency.upper()]['price'])
-            total = amount * price
+            price = [x['quotes'][self.currency.upper()]['price'] for x in ticker_data if x['website_slug'] == symbol][0]
+            total = amount * float(price)
             portfolio_total += total
             table.append([symbol, amount, price, total])
 
