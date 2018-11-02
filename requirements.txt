@@ -1,12 +1,12 @@
 -i https://pypi.python.org/simple
 args==0.1.0
-certifi==2018.4.16
+certifi==2018.10.15
 chardet==3.0.4
 clint==0.5.1
 coinmarketcap==5.0.3
 idna==2.7
 krakenex==2.1.0
 requests-cache==0.4.13
-requests==2.19.1
+requests==2.20.0
 tabulate==0.8.2
-urllib3==1.23
+urllib3==1.24
